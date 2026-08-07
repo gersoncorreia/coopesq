@@ -61,27 +61,43 @@ Acesse a pasta do projeto clonado no servidor (via SSH):
 cd ~/coopesq_app
 ```
 
-### 2.1. Instalar as Dependências do PHP (Composer)
+### 2.1. Configuração Global do Composer na HostGator (Resolver `command not found`)
 
-> ⚠️ **Na HostGator (jailshell), se o comando `composer` retornar `command not found`**, utilize uma das 2 opções abaixo:
+> ⚠️ Na HostGator compartilhada (jailshell), o comando `composer` não vem ativado globalmente por padrão. Siga os 4 passos abaixo **uma única vez** para instalar o Composer de forma **GLOBAL** na sua conta de usuário:
 
-#### Opção A (Recomendada — Baixar o `composer.phar` na pasta do projeto):
 ```bash
-cd ~/coopesq_app
+# 1. Criar a pasta bin no diretório raiz do seu usuário
+mkdir -p ~/bin
 
-# Baixar o executável do Composer diretamente para a pasta
+# 2. Baixar o arquivo binário do Composer para a pasta ~/bin/composer
+cd ~
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 php composer-setup.php
 php -r "unlink('composer-setup.php');"
+mv composer.phar ~/bin/composer
+chmod +x ~/bin/composer
 
-# Rodar a instalação usando o composer.phar:
-php composer.phar install --no-dev --optimize-autoloader
+# 3. Adicionar o executável e o atalho no PATH e no arquivo de perfil (.bashrc e .bash_profile)
+echo 'export PATH="$HOME/bin:$PATH"' >> ~/.bashrc
+echo 'export PATH="$HOME/bin:$PATH"' >> ~/.bash_profile
+echo 'alias composer="php ~/bin/composer"' >> ~/.bashrc
+echo 'alias composer="php ~/bin/composer"' >> ~/.bash_profile
+
+# 4. Recarregar os arquivos de configuração da sua sessão SSH
+source ~/.bashrc
+source ~/.bash_profile
 ```
 
-#### Opção B (Usar o caminho nativo do cPanel HostGator):
+Após fazer os 4 passos acima, teste digitando em qualquer pasta:
+```bash
+composer -V
+```
+Você verá a saída: `Composer version 2.x.x ...` e o comando `composer` passará a funcionar **globalmente** em qualquer pasta da sua conta!
+
+#### Executar a Instalação no Projeto:
 ```bash
 cd ~/coopesq_app
-/opt/cpanel/composer/bin/composer install --no-dev --optimize-autoloader
+composer install --no-dev --optimize-autoloader
 ```
 
 ### 2.2. Criar e Configurar o Arquivo `.env` de Produção
