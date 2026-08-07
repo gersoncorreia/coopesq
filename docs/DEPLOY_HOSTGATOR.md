@@ -1,46 +1,87 @@
-# Guia Passo a Passo: Deploy da COOPESQ em Subdomínio na HostGator (cPanel)
+# Guia Passo a Passo: Deploy via Git/GitHub no Subdomínio HostGator (cPanel)
 
-Este guia descreve o procedimento completo para realizar o deploy do portal **COOPESQ** no subdomínio **`coopesq.soulsync.ia.br`** em uma conta de hospedagem compartilhada HostGator com cPanel.
+Este guia descreve o procedimento passo a passo para clonar o projeto **COOPESQ** direto do GitHub (`https://github.com/gersoncorreia/coopesq.git`) para o subdomínio **`coopesq.soulsync.ia.br`** no servidor da HostGator via Terminal SSH ou pelo *Git™ Version Control* do cPanel.
 
 ---
 
-## 🌐 Dados de Configuração do Subdomínio
+## 🌐 Dados da Aplicação
+- **Repositório GitHub**: `https://github.com/gersoncorreia/coopesq.git`
 - **Subdomínio**: `coopesq.soulsync.ia.br`
-- **URL de Produção**: `https://coopesq.soulsync.ia.br`
-- **Diretório do Subdomínio (Document Root)**: `/home/SEU_USUARIO/coopesq.soulsync.ia.br/` *(ou `/home/SEU_USUARIO/public_html/coopesq/` dependendo da criação no cPanel)*
-- **Diretório do Core (Laravel privado)**: `/home/SEU_USUARIO/coopesq_app/`
+- **URL Final**: `https://coopesq.soulsync.ia.br`
+- **Diretório do Código (Laravel Core)**: `/home/SEU_USUARIO/coopesq_app/`
+- **Diretório do Subdomínio (Document Root Público)**: `/home/SEU_USUARIO/coopesq.soulsync.ia.br/` (ou diretamente apontado para `coopesq_app/public`)
 
 ---
 
-## 📋 Pré-requisitos na HostGator
-1. **Versão do PHP**: PHP **8.2** ou **8.3** ativado para o subdomínio `coopesq.soulsync.ia.br` no cPanel (*MultiPHP Manager*).
-2. **Extensões PHP Ativas**: `pdo_mysql`, `mbstring`, `openssl`, `tokenizer`, `xml`, `curl`, `fileinfo`, `zip`, `gd`.
-3. **SSL/HTTPS**: Certificado SSL grátis (Let's Encrypt / HostGator) ativado para `coopesq.soulsync.ia.br`.
+## 📋 Pré-requisitos na HostGator (cPanel)
+
+1. **Ativar o PHP 8.2 ou 8.3**:
+   - Acesse o cPanel > **Gerenciador MultiPHP (MultiPHP Manager)**.
+   - Selecione o subdomínio `coopesq.soulsync.ia.br` e defina a versão do PHP para **PHP 8.2** ou **PHP 8.3**.
+2. **Ativar o SSL (HTTPS)**:
+   - Vá em **SSL/TLS Status** ou **AutoSSL** no cPanel e execute a verificação para garantir HTTPS grátis no subdomínio `coopesq.soulsync.ia.br`.
 
 ---
 
-## 🛠️ Passo 1: Preparação Local dos Arquivos
+## 🚀 Passo 1: Clonar o Repositório do GitHub no Servidor
 
-No seu computador local, execute os seguintes comandos no terminal do projeto:
+### Método A: Via Terminal SSH (Recomendado & Mais Rápido)
 
-### 1.1. Gerar os Arquivos de Produção do Frontend (Vite)
+1. Conecte-se à sua conta HostGator via SSH:
+   ```bash
+   ssh usuario@soulsync.ia.br
+   ```
+2. Vá para a raiz da sua conta (home) e clone o repositório em uma pasta privada chamada `coopesq_app`:
+   ```bash
+   cd ~
+   git clone https://github.com/gersoncorreia/coopesq.git coopesq_app
+   ```
+
+---
+
+### Método B: Via Interface do cPanel (Git™ Version Control)
+
+1. Acesse o **cPanel** da HostGator.
+2. Procure pela ferramenta **Controle de Versão Git™ (Git™ Version Control)**.
+3. Clique em **Criar (Create)**.
+4. Preencha os campos:
+   - **Clone URL**: `https://github.com/gersoncorreia/coopesq.git`
+   - **Repository Path**: `coopesq_app`
+   - **Repository Name**: `coopesq`
+5. Clique em **Criar (Create)**.
+> **Vantagem**: Sempre que fizer novos commits no GitHub, basta clicar no botão **"Pull from Remote"** dentro dessa ferramenta no cPanel para atualizar o código em 1 segundo!
+
+---
+
+## 📦 Passo 2: Instalar Dependências e Configurar o `.env`
+
+Acesse a pasta do projeto clonado no servidor (via SSH):
+
 ```bash
-npm run build
+cd ~/coopesq_app
 ```
-> Isso gera os arquivos CSS/JS otimizados e minificados em `public/build/`.
 
-### 1.2. Criar o Arquivo `.env` de Produção
-Crie um arquivo `.env` ajustado para o subdomínio `coopesq.soulsync.ia.br`:
+### 2.1. Instalar as Dependências do PHP (Composer)
+```bash
+composer install --no-dev --optimize-autoloader
+```
+
+### 2.2. Criar e Configurar o Arquivo `.env` de Produção
+Copie o arquivo `.env.example` para `.env`:
+```bash
+cp .env.example .env
+```
+
+Edite o `.env` (`nano .env` ou via Gerenciador de Arquivos do cPanel):
 
 ```env
 APP_NAME="COOPESQ"
 APP_ENV=production
-APP_KEY=base64:SUA_CHAVE_GERADA_LOCALMENTE
+APP_KEY=
 APP_DEBUG=false
 APP_URL=https://coopesq.soulsync.ia.br
 
 LOG_CHANNEL=daily
-LOG_DEPRECATIONS_CHANNEL=null
 LOG_LEVEL=error
 
 DB_CONNECTION=mysql
@@ -58,62 +99,70 @@ SESSION_DRIVER=file
 SESSION_LIFETIME=120
 ```
 
----
-
-## 🗄️ Passo 2: Banco de Dados MySQL no cPanel
-
-1. Acesse o **cPanel** da HostGator.
-2. Vá em **Assistente de Banco de Dados MySQL®**.
-3. Crie um novo banco de dados (ex: `seuusuario_coopesq`).
-4. Crie um novo usuário MySQL (ex: `seuusuario_dbuser`) e defina uma senha forte.
-5. Vincule o Usuário ao Banco marcando **"TODOS OS PRIVILÉGIOS"**.
-6. Preencha os campos `DB_DATABASE`, `DB_USERNAME` e `DB_PASSWORD` no `.env`.
-
----
-
-## 📁 Passo 3: Organização dos Arquivos no Servidor
-
-Divida os arquivos em duas áreas para garantir máxima segurança:
-
-1. **Pasta do Core (Laravel Privado)**:
-   - Crie a pasta `/home/SEU_USUARIO/coopesq_app/` na raiz da sua conta cPanel (fora do diretório web).
-   - Envie **todos os arquivos do projeto** para a pasta `coopesq_app` (**exceto** `node_modules` e `.git`).
-
-2. **Pasta do Subdomínio (Document Root Público)**:
-   - Abra a pasta do subdomínio: `/home/SEU_USUARIO/coopesq.soulsync.ia.br/`.
-   - Copie todo o conteúdo da pasta `coopesq_app/public/*` para dentro de `/home/SEU_USUARIO/coopesq.soulsync.ia.br/`.
-
----
-
-## 🔗 Passo 4: Ajuste do `index.php` do Subdomínio
-
-Edite o arquivo `/home/SEU_USUARIO/coopesq.soulsync.ia.br/index.php` no Gerenciador de Arquivos do cPanel e aponte os caminhos para a pasta `coopesq_app`:
-
-```php
-<?php
-
-use Illuminate\Http\Request;
-
-define('LARAVEL_START', microtime(true));
-
-// Verificar se o sistema está em manutenção
-if (file_exists($maintenance = __DIR__.'/../coopesq_app/storage/framework/maintenance.php')) {
-    require $maintenance;
-}
-
-// Carregar o Autoloader do Composer
-require __DIR__.'/../coopesq_app/vendor/autoload.php';
-
-// Inicializar a aplicação Laravel
-(require_once __DIR__.'/../coopesq_app/bootstrap/app.php')
-    ->handleRequest(Request::capture());
+### 2.3. Gerar a Chave da Aplicação Laravel
+```bash
+php artisan key:generate
 ```
 
 ---
 
-## ⚙️ Passo 5: Arquivo `.htaccess` Otimizado para o Subdomínio
+## 🗄️ Passo 3: Criar o Banco de Dados MySQL no cPanel
 
-Crie ou edite o arquivo `.htaccess` localizado dentro de `/home/SEU_USUARIO/coopesq.soulsync.ia.br/.htaccess`:
+1. No cPanel, vá em **Assistente de Banco de Dados MySQL®**.
+2. Crie o banco de dados (ex: `seuusuario_coopesq`).
+3. Crie o usuário (ex: `seuusuario_dbuser`) com uma senha forte.
+4. Marque a caixa **"TODOS OS PRIVILÉGIOS"** e confirme.
+5. Atualize as credenciais no arquivo `.env`.
+
+---
+
+## ⚙️ Passo 4: Executar Migrações e Populador de Dados (Seeder)
+
+Dentro da pasta `~/coopesq_app`, execute:
+
+```bash
+# Criar tabelas e popular as 15 configurações whitelabel, categorias e produtos
+php artisan migrate --force
+php artisan db:seed --force
+
+# Otimizar caches de rotas e configurações do Laravel
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+---
+
+## 🔗 Passo 5: Vincular o Subdomínio ao Projeto Clonado
+
+Existem duas maneiras simples de conectar o subdomínio `coopesq.soulsync.ia.br` ao código clonado:
+
+### Opção 1: Alterar o Document Root no cPanel (A Forma Mais Limpa)
+1. No cPanel, acesse **Domínios (Domains)** ou **Subdomínios (Subdomains)**.
+2. Na linha do subdomínio `coopesq.soulsync.ia.br`, clique em **Editar / Gerenciar**.
+3. Altere o campo **Document Root** de `/public_html/coopesq` para:
+   ```
+   /home/SEU_USUARIO/coopesq_app/public
+   ```
+4. Salve. Pronto! O subdomínio apontará diretamente para a pasta pública do projeto clonado sem precisar copiar arquivos ou criar links adicionais.
+
+---
+
+### Opção 2: Copiar a Pasta Pública e Criar Link Simbólico (Se o cPanel não permitir alterar a raiz)
+Caso o seu plano cPanel não permita alterar a raiz do subdomínio:
+1. Abra a pasta do subdomínio: `~/coopesq.soulsync.ia.br/` (ou `~/public_html/coopesq/`).
+2. Copie os arquivos da pasta `~/coopesq_app/public/*` para dentro da pasta do subdomínio.
+3. Edite o `index.php` do subdomínio apontando o autoloader para `../coopesq_app/vendor/autoload.php`.
+4. Crie o link simbólico do armazenamento:
+   ```bash
+   ln -s ~/coopesq_app/storage/app/public ~/coopesq.soulsync.ia.br/storage
+   ```
+
+---
+
+## 🔒 Passo 6: Configurar o Arquivo `.htaccess` para o Subdomínio
+
+Certifique-se de que o arquivo `.htaccess` na pasta pública do subdomínio possua as seguintes regras essenciais:
 
 ```apache
 <IfModule mod_rewrite.c>
@@ -127,7 +176,7 @@ Crie ou edite o arquivo `.htaccess` localizado dentro de `/home/SEU_USUARIO/coop
     RewriteCond %{HTTPS} off
     RewriteRule ^(.*)$ https://coopesq.soulsync.ia.br/$1 [R=301,L]
 
-    # 2. Passar o Header de Autorização Bearer Token (Essencial para a API do Admin)
+    # 2. Preservar o Header de Autorização Bearer Token (Essencial para o login e APIs do Admin)
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
@@ -136,7 +185,7 @@ Crie ou edite o arquivo `.htaccess` localizado dentro de `/home/SEU_USUARIO/coop
     RewriteCond %{REQUEST_URI} (.+)/$
     RewriteRule ^ %1 [L,R=301]
 
-    # 4. Redirecionar todas as requisições SPA / API para o index.php
+    # 4. Redirecionar requisições SPA (Vue / Inertia) e API para o index.php
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
@@ -148,61 +197,39 @@ Options -Indexes
 
 ---
 
-## 🔑 Passo 6: Executar Migrações, Seeders e Link Simbólico
+## 🔑 Passo 7: Permissões de Leitura e Escrita
 
-### Opção A: Via Terminal SSH (Recomendado)
-Acesse a pasta `coopesq_app` via SSH:
+No terminal SSH, aplique permissão de escrita nas pastas de cache e armazenamento:
+
 ```bash
-cd ~/coopesq_app
-
-# Executar as migrações e popular o banco com as 15 configurações whitelabel
-php artisan migrate --force
-php artisan db:seed --force
-
-# Otimizar caches de produção
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-
-# Criar o Link Simbólico de imagens do storage para a pasta do subdomínio
-ln -s ~/coopesq_app/storage/app/public ~/coopesq.soulsync.ia.br/storage
+chmod -R 775 ~/coopesq_app/storage
+chmod -R 775 ~/coopesq_app/bootstrap/cache
 ```
 
-### Opção B: Via Script PHP (Caso não tenha SSH)
-Se não tiver acesso ao SSH:
-1. Crie um arquivo `link.php` em `/home/SEU_USUARIO/coopesq.soulsync.ia.br/link.php`:
-   ```php
-   <?php
-   symlink('/home/SEU_USUARIO/coopesq_app/storage/app/public', '/home/SEU_USUARIO/coopesq.soulsync.ia.br/storage');
-   echo "Link simbólico criado com sucesso!";
-   ```
-2. Acesse `https://coopesq.soulsync.ia.br/link.php` no navegador.
-3. Exclua o arquivo `link.php` logo após a execução.
+---
+
+## 🔄 Como Atualizar o Site no Futuro (Deploy Contínuo)
+
+Quando você fizer alterações no seu computador e der `git push origin main`:
+
+### Via SSH:
+```bash
+cd ~/coopesq_app
+git pull origin main
+php artisan config:cache
+php artisan route:cache
+```
+
+### Via cPanel (Git™ Version Control):
+Acesse cPanel > **Git™ Version Control** > clique no repositório `coopesq` > selecione a aba **Pull or Deploy** > clique no botão **"Pull from Remote"**.
 
 ---
 
-## 🔒 Passo 7: Permissões de Pastas
-Garanta permissão `755` ou `775` nas seguintes pastas:
-- `/home/SEU_USUARIO/coopesq_app/storage/` (e todas as subpastas)
-- `/home/SEU_USUARIO/coopesq_app/bootstrap/cache/`
+## 🚀 Passo 8: Verificação Final
 
----
-
-## 🚀 Passo 8: Teste de Acesso
-
-1. **Site Público**: Acesse `https://coopesq.soulsync.ia.br`
-   - Verifique o carregamento das seções, imagens e animações de Scroll-Reveal.
-2. **Painel Admin**: Acesse `https://coopesq.soulsync.ia.br/admin`
-   - **E-mail**: `admin@coopesq.com.br`
+1. **Portal Público**: Acesse `https://coopesq.soulsync.ia.br`
+   - Teste as imagens, catálogo de produtos e animações Scroll-Reveal.
+2. **Painel Administrativo**: Acesse `https://coopesq.soulsync.ia.br/admin`
+   - **Login**: `admin@coopesq.com.br`
    - **Senha**: `password`
-   - Teste a alteração e salvamento de configurações no formulário do Dashboard.
-
----
-
-## ⚡ Solução de Problemas em Subdomínio HostGator
-
-| Erro | Causa Provável | Solução |
-|---|---|---|
-| **Erro 500 ao acessar API/Login** | Falta do Header Authorization no `.htaccess` | Certifique-se de que o trecho `RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]` está no `.htaccess`. |
-| **Erro 404 ao recarregar a página** | Módulo `mod_rewrite` inativo ou `.htaccess` fora do subdomínio | Garanta que o `.htaccess` esteja dentro de `/home/SEU_USUARIO/coopesq.soulsync.ia.br/`. |
-| **Formulário de Configurações em Branco** | Cache antigo ou banco não populado | Execute `php artisan db:seed --force` e limpe o cache com `php artisan cache:clear`. |
+   - Edite e salve as configurações no Dashboard para confirmar o pleno funcionamento das APIs!
