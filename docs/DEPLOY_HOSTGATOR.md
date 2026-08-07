@@ -267,3 +267,14 @@ Acesse cPanel > **Git™ Version Control** > clique no repositório `coopesq` > 
    - **Login**: `admin@coopesq.com.br`
    - **Senha**: `password`
    - Edite e salve as configurações no Dashboard para confirmar o pleno funcionamento das APIs!
+
+---
+
+## ⚡ Solução de Erros Frequentes na HostGator
+
+| Erro | Causa Provável | Solução Passo a Passo |
+|---|---|---|
+| **ERRO 403 ACESSO NEGADO (Forbidden)** | Document Root apontando para pasta errada OU falta do `DirectoryIndex` OU permissão `777` em pastas | **1.** No cPanel > *Domínios*, confirme se a raiz de `coopesq.soulsync.ia.br` aponta para `/home/SEU_USUARIO/coopesq_app/public`.<br>**2.** No SSH, aplique permissões válidas do suPHP: `chmod 755 ~/coopesq_app/public` e `chmod 644 ~/coopesq_app/public/index.php`. |
+| **Erro 500 ao acessar API/Login** | Falta do Header Authorization ou permissão de escrita em `storage/` | **1.** Verifique o `.htaccess`.<br>**2.** Aplique: `chmod -R 775 ~/coopesq_app/storage`. |
+| **Erro 404 ao recarregar a página** | `.htaccess` ausente na pasta do subdomínio | Garanta que o `.htaccess` esteja dentro de `coopesq_app/public/` ou no diretório do subdomínio. |
+
