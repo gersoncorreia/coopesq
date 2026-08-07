@@ -62,8 +62,26 @@ cd ~/coopesq_app
 ```
 
 ### 2.1. Instalar as Dependências do PHP (Composer)
+
+> ⚠️ **Na HostGator (jailshell), se o comando `composer` retornar `command not found`**, utilize uma das 2 opções abaixo:
+
+#### Opção A (Recomendada — Baixar o `composer.phar` na pasta do projeto):
 ```bash
-composer install --no-dev --optimize-autoloader
+cd ~/coopesq_app
+
+# Baixar o executável do Composer diretamente para a pasta
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php composer-setup.php
+php -r "unlink('composer-setup.php');"
+
+# Rodar a instalação usando o composer.phar:
+php composer.phar install --no-dev --optimize-autoloader
+```
+
+#### Opção B (Usar o caminho nativo do cPanel HostGator):
+```bash
+cd ~/coopesq_app
+/opt/cpanel/composer/bin/composer install --no-dev --optimize-autoloader
 ```
 
 ### 2.2. Criar e Configurar o Arquivo `.env` de Produção
