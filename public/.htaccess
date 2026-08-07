@@ -5,21 +5,28 @@
 
     RewriteEngine On
 
-    # Handle Authorization Header
+    # 1. Forçar HTTPS na HostGator (Redirecionamento automático seguro)
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # 2. Preservar o Header de Autorização Bearer Token (Essencial para Login Sanctum & APIs do Admin)
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-    # Handle X-XSRF-Token Header
+    # 3. Preservar o Header X-XSRF-Token
     RewriteCond %{HTTP:x-xsrf-token} .
     RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
 
-    # Redirect Trailing Slashes If Not A Folder...
+    # 4. Remover barras no final de URLs que não sejam diretórios físicos
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$
     RewriteRule ^ %1 [L,R=301]
 
-    # Send Requests To Front Controller...
+    # 5. Redirecionar todas as rotas SPA (Vue / Inertia) e rotas de API para o index.php
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# Impedir listagem de diretórios
+Options -Indexes
