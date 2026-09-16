@@ -76,7 +76,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import HeroSlideControls from './HeroSlideControls.vue';
 
 const props = defineProps({
-  banners: { type: Array, default: () => [] },
+  banners: { type: [Array, Object], default: () => [] },
   isLoading: { type: Boolean, default: false },
 });
 const emit = defineEmits(['scroll-to']);
@@ -95,7 +95,8 @@ const defaultSlide = {
 };
 
 const slides = computed(() => {
-  const active = (props.banners || []).filter(b => b.is_active !== false);
+  const list = Array.isArray(props.banners) ? props.banners : [];
+  const active = list.filter(b => b && b.is_active !== false);
   if (active.length > 0) return active;
   if (props.isLoading) return [];
   return [defaultSlide];

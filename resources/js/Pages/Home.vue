@@ -38,7 +38,8 @@ const settingsStore = useSettingsStore();
 const getCachedBanners = () => {
   try {
     const cached = localStorage.getItem('coopesq_banners_cache');
-    return cached ? JSON.parse(cached) : [];
+    const parsed = cached ? JSON.parse(cached) : [];
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
   }
@@ -80,13 +81,17 @@ const fetchHomeData = async () => {
       axios.get('/api/banners'),
       axios.get('/api/testimonials'),
     ]);
-    differentials.value = diffRes.data;
-    products.value = prodRes.data.data || [];
-    partners.value = partRes.data;
-    posts.value = (postRes.data.data || []).slice(0, 3);
-    testimonials.value = testRes.data;
-    banners.value = banRes.data || [];
-    try { localStorage.setItem('coopesq_banners_cache', JSON.stringify(banners.value)); } catch {}
+    differentials.value = Array.isArray(diffRes.data) ? diffRes.data : [];
+    products.value = Array.isArray(prodRes.data?.data) ? prodRes.data.data : [];
+    partners.value = Array.isArray(partRes.data) ? partRes.data : [];
+    posts.value = Array.isArray(postRes.data?.data) ? postRes.data.data.slice(0, 3) : [];
+    testimonials.value = Array.isArray(testRes.data) ? testRes.data : [];
+    banners.value = Array.isArray(banRes.data) ? banRes.data : [];
+    try {
+      if (Array.isArray(banners.value)) {
+        localStorage.setItem('coopesq_banners_cache', JSON.stringify(banners.value));
+      }
+    } catch {}
   } catch (error) {
     console.error('Erro ao carregar dados da Home:', error);
   } finally {

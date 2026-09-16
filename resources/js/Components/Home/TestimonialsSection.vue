@@ -50,6 +50,6 @@
 
 <script setup>
 defineProps({
-  testimonials: { type: Array, default: () => [] },
+  testimonials: { type: [Array, Object], default: () => [] },
 });
 </script>

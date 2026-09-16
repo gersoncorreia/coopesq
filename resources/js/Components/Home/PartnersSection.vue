@@ -73,7 +73,7 @@ import { ChevronLeft, ChevronRight, Play, Pause } from 'lucide-vue-next';
 import PartnerLogoItem from './PartnerLogoItem.vue';
 
 const props = defineProps({
-  partners: { type: Array, default: () => [] },
+  partners: { type: [Array, Object], default: () => [] },
 });
 
 const trackRef = ref(null);
@@ -85,8 +85,9 @@ const scrollStart = ref(0);
 let rafId = null;
 
 const carouselItems = computed(() => {
-  if (!props.partners.length) return [];
-  return [...props.partners, ...props.partners, ...props.partners];
+  const list = Array.isArray(props.partners) ? props.partners : [];
+  if (!list.length) return [];
+  return [...list, ...list, ...list];
 });
 
 const scrollSpeed = 0.75;

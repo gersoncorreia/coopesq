@@ -34,7 +34,7 @@ class PublicApiController extends Controller
     public function page($slug)
     {
         $page = Cache::remember("coopesq_page_{$slug}", 3600, fn() =>
-            Page::where('slug', $slug)->where('is_active', true)->first()
+            Page::where('slug', $slug)->where('is_active', true)->first()?->toArray()
         );
 
         abort_if(!$page, 404);
@@ -91,7 +91,7 @@ class PublicApiController extends Controller
     public function partners()
     {
         $data = Cache::remember('coopesq_partners', 3600, fn() =>
-            Partner::where('is_active', true)->orderBy('order', 'asc')->get()
+            Partner::where('is_active', true)->orderBy('order', 'asc')->get()->toArray()
         );
         return response()->json($data);
     }
@@ -99,7 +99,7 @@ class PublicApiController extends Controller
     public function differentials()
     {
         $data = Cache::remember('coopesq_differentials', 3600, fn() =>
-            Differential::where('is_active', true)->orderBy('order', 'asc')->get()
+            Differential::where('is_active', true)->orderBy('order', 'asc')->get()->toArray()
         );
         return response()->json($data);
     }
@@ -107,7 +107,7 @@ class PublicApiController extends Controller
     public function banners()
     {
         $data = Cache::remember('coopesq_banners', 3600, fn() =>
-            HeroBanner::where('is_active', true)->orderBy('order', 'asc')->get()
+            HeroBanner::where('is_active', true)->orderBy('order', 'asc')->get()->toArray()
         );
         return response()->json($data);
     }
@@ -115,7 +115,7 @@ class PublicApiController extends Controller
     public function testimonials()
     {
         $data = Cache::remember('coopesq_testimonials', 3600, fn() =>
-            Testimonial::where('is_active', true)->orderBy('order', 'asc')->get()
+            Testimonial::where('is_active', true)->orderBy('order', 'asc')->get()->toArray()
         );
         return response()->json($data);
     }

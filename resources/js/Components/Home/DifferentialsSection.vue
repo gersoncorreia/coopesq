@@ -40,6 +40,6 @@
 import { getDiffIcon } from '../../utils/iconHelpers';
 
 defineProps({
-  differentials: { type: Array, default: () => [] },
+  differentials: { type: [Array, Object], default: () => [] },
 });
 </script>
