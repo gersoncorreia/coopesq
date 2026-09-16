@@ -13,7 +13,7 @@
       <!-- Content Activity & Status -->
       <RecentContentFeed 
         :products="stats.recent_products" 
-        :system-info="stats.system_info || {}" 
+        :posts="stats.recent_posts" 
       />
     </div>
   </AdminLayout>

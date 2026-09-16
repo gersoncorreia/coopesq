@@ -118,7 +118,7 @@
     <div class="border-t border-white/5 py-6">
       <div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/25 font-medium">
         <span>© 2026 {{ settingsStore.general.site_name || 'COOPESQ' }}. Todos os direitos reservados.</span>
-        <span>Plataforma Whitelabel de Alta Performance</span>
+        <span>Cooperativismo & Sustentabilidade na Amazônia</span>
       </div>
     </div>
   </footer>
