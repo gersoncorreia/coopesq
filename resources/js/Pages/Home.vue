@@ -1,7 +1,9 @@
 <template>
-  <div>
-    <HeroSection :hero-banner="heroBanner" @scroll-to="scrollTo" />
+  <div class="bg-white selection:bg-[#1B5E20] selection:text-white">
+    <HeroSection :banners="banners" :is-loading="!isLoaded" @scroll-to="scrollTo" />
+    <HeroFeatureBoxes />
     <AboutSection :settings="settingsStore.general" />
+    <StatsCounterSection />
     <DifferentialsSection :differentials="differentials" />
     <ProductsSection 
       :products="products" 
@@ -21,7 +23,9 @@ import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 import { useSettingsStore } from '../stores/useSettingsStore';
 import HeroSection from '../Components/Home/HeroSection.vue';
+import HeroFeatureBoxes from '../Components/Home/HeroFeatureBoxes.vue';
 import AboutSection from '../Components/Home/AboutSection.vue';
+import StatsCounterSection from '../Components/Home/StatsCounterSection.vue';
 import DifferentialsSection from '../Components/Home/DifferentialsSection.vue';
 import ProductsSection from '../Components/Home/ProductsSection.vue';
 import PartnersSection from '../Components/Home/PartnersSection.vue';
@@ -31,12 +35,22 @@ import CtaBannerSection from '../Components/Home/CtaBannerSection.vue';
 
 const settingsStore = useSettingsStore();
 
+const getCachedBanners = () => {
+  try {
+    const cached = localStorage.getItem('coopesq_banners_cache');
+    return cached ? JSON.parse(cached) : [];
+  } catch {
+    return [];
+  }
+};
+
 const differentials = ref([]);
 const products = ref([]);
 const partners = ref([]);
 const posts = ref([]);
 const testimonials = ref([]);
-const heroBanner = ref({});
+const banners = ref(getCachedBanners());
+const isLoaded = ref(banners.value.length > 0);
 const activeCategory = ref('all');
 
 const categories = [
@@ -71,9 +85,12 @@ const fetchHomeData = async () => {
     partners.value = partRes.data;
     posts.value = (postRes.data.data || []).slice(0, 3);
     testimonials.value = testRes.data;
-    if (banRes.data.length > 0) heroBanner.value = banRes.data[0];
+    banners.value = banRes.data || [];
+    try { localStorage.setItem('coopesq_banners_cache', JSON.stringify(banners.value)); } catch {}
   } catch (error) {
     console.error('Erro ao carregar dados da Home:', error);
+  } finally {
+    isLoaded.value = true;
   }
 };
 

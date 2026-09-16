@@ -19,18 +19,50 @@ use Illuminate\Support\Facades\Hash;
 class AdminApiController extends Controller
 {
     /**
-     * Dashboard statistics.
+     * Dashboard statistics and recent activities.
      */
     public function stats()
     {
+        $totalProducts = Product::count();
+        $activeProducts = Product::where('is_active', true)->count();
+        $totalPosts = Post::count();
+        $publishedPosts = Post::where('is_published', true)->count();
+        $totalPartners = Partner::count();
+        $totalBanners = HeroBanner::where('is_active', true)->count();
+        $totalTestimonials = Testimonial::where('is_active', true)->count();
+        $totalPostViews = Post::sum('views');
+
+        // Últimos produtos cadastrados
+        $recentProducts = Product::with('category')
+            ->orderBy('id', 'desc')
+            ->limit(4)
+            ->get(['id', 'name', 'category_id', 'is_active', 'created_at']);
+
+        // Últimos posts publicados
+        $recentPosts = Post::with('category')
+            ->orderBy('id', 'desc')
+            ->limit(4)
+            ->get(['id', 'title', 'slug', 'category_id', 'is_published', 'views', 'created_at']);
+
         return response()->json([
-            'total_products' => Product::count(),
-            'total_posts' => Post::count(),
-            'published_posts' => Post::where('is_published', true)->count(),
-            'total_partners' => Partner::count(),
-            'total_post_views' => Post::sum('views'),
+            'total_products' => $totalProducts,
+            'active_products' => $activeProducts,
+            'total_posts' => $totalPosts,
+            'published_posts' => $publishedPosts,
+            'total_partners' => $totalPartners,
+            'total_banners' => $totalBanners,
+            'total_testimonials' => $totalTestimonials,
+            'total_post_views' => $totalPostViews,
+            'recent_products' => $recentProducts,
+            'recent_posts' => $recentPosts,
+            'system_info' => [
+                'php_version' => PHP_VERSION,
+                'laravel_version' => app()->version(),
+                'server_time' => now()->format('d/m/Y H:i'),
+            ]
         ]);
     }
+
 
     /**
      * Update settings in bulk.
@@ -40,14 +72,17 @@ class AdminApiController extends Controller
         $validated = $request->validate([
             'settings' => 'required|array',
             'settings.*.key' => 'required|string',
-            'settings.*.value' => 'nullable|string',
+            'settings.*.value' => 'nullable',
             'settings.*.group' => 'required|string',
         ]);
 
         foreach ($validated['settings'] as $item) {
             Setting::updateOrCreate(
                 ['key' => $item['key']],
-                ['value' => $item['value'], 'group' => $item['group']]
+                [
+                    'value' => array_key_exists('value', $item) ? $item['value'] : null,
+                    'group' => $item['group']
+                ]
             );
         }
 
@@ -57,20 +92,28 @@ class AdminApiController extends Controller
     }
 
     /**
-     * Upload asset file.
+     * Upload asset file with strict MIME validation.
      */
     public function upload(Request $request)
     {
         $request->validate([
-            'file' => 'required|image|mimes:jpeg,png,jpg,webp,svg|max:4096',
+            'file' => [
+                'required',
+                'file',
+                'mimes:jpeg,png,jpg,webp,svg,ico',
+                'mimetypes:image/jpeg,image/png,image/webp,image/svg+xml,image/x-icon,image/vnd.microsoft.icon',
+                'max:4096'
+            ],
         ]);
 
         $path = $request->file('file')->store('uploads', 'public');
-        $url = asset('storage/' . $path);
+        $relativeUrl = '/storage/' . $path;
 
         return response()->json([
-            'path' => '/storage/' . $path,
-            'url' => $url,
+            'path' => $relativeUrl,
+            'url' => $relativeUrl,
         ]);
     }
+
+
 }

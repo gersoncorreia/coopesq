@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 56" width="210" height="56">
+  <g transform="translate(6, 6)">
+    <g transform="scale(1.83)">
+      <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" fill="#1B5E20"/><circle cx="12" cy="12" r="3.5" fill="#F5A623"/>
+    </g>
+  </g>
+  <g transform="translate(58, 20)">
+    <text x="0" y="0" font-family="'Montserrat', 'Inter', system-ui, sans-serif" font-size="8.5" font-weight="700" fill="#64748B" letter-spacing="1.2">PREFEITURA DE</text>
+    <text x="0" y="19" font-family="'Montserrat', 'Inter', system-ui, sans-serif" font-size="14.5" font-weight="900" fill="#1B5E20" letter-spacing="-0.3">RIO BRANCO</text>
+  </g>
+</svg>

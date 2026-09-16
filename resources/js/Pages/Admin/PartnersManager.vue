@@ -1,113 +1,122 @@
 <template>
   <AdminLayout>
-    <div class="space-y-6">
-      <div class="flex justify-between items-center bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+    <div class="space-y-5">
+      <!-- Section Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-zinc-200/80">
         <div>
-          <h2 class="text-xl font-extrabold text-slate-900">Parceiros e Clientes Atendidos</h2>
-          <p class="text-xs text-slate-500">Gerencie as logomarcas exibidas na grade de parceiros do site.</p>
+          <h1 class="text-xl font-bold tracking-tight text-zinc-900">Parceiros & Instituições</h1>
+          <p class="text-xs text-zinc-500 mt-0.5">Instituições parceiras, órgãos apoiadores e clientes atendidos.</p>
         </div>
         <button 
-          @click="showModal = true" 
-          class="bg-coopesq-green hover:bg-coopesq-green-dark text-white font-bold px-5 py-2.5 rounded-xl shadow-md transition-all text-sm flex items-center gap-2"
+          @click="openCreateModal"
+          class="h-8 px-3 rounded-md text-xs font-medium bg-[#1B5E20] hover:bg-[#144718] text-white shadow-xs transition-colors inline-flex items-center gap-1.5 self-start cursor-pointer"
         >
-          ➕ Novo Parceiro
+          <Plus :size="14" />
+          <span>Novo Parceiro</span>
         </button>
       </div>
 
-      <!-- Grid de Parceiros -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div v-for="partner in partners" :key="partner.id" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-          <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-full bg-emerald-100 text-coopesq-green font-bold flex items-center justify-center text-base">
-              🏛️
-            </div>
-            <div>
-              <h4 class="font-bold text-slate-900 text-sm">{{ partner.name }}</h4>
-              <a v-if="partner.url" :href="partner.url" target="_blank" class="text-xs text-coopesq-green hover:underline">Link Institucional</a>
-            </div>
-          </div>
-          <button @click="deletePartner(partner.id)" class="text-xs text-red-600 font-bold hover:underline">Excluir</button>
-        </div>
+      <div v-if="isLoading" class="p-12 text-center text-xs text-zinc-400 font-medium">
+        Carregando parceiros...
       </div>
 
-      <!-- Modal Modal Criar Parceiro -->
-      <div v-if="showModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-slate-200">
-          <h3 class="text-lg font-bold text-slate-900 mb-4">Cadastrar Novo Parceiro</h3>
-          <form @submit.prevent="createPartner" class="space-y-4">
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Nome da Instituição / Cliente</label>
-              <input v-model="newPartner.name" type="text" required class="w-full p-2.5 rounded-lg border border-slate-300 text-sm" />
+      <div v-else-if="partners.length === 0" class="p-12 text-center bg-white rounded-lg border border-zinc-200">
+        <p class="text-zinc-400 text-xs">Nenhum parceiro cadastrado.</p>
+      </div>
+
+      <!-- Partners Grid with Pagination -->
+      <div v-else class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div 
+            v-for="partner in paginatedPartners" 
+            :key="partner.id" 
+            class="bg-white p-4 rounded-lg border border-zinc-200/80 shadow-xs flex flex-col justify-between space-y-3 hover:border-zinc-300 transition-colors"
+          >
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded bg-zinc-100 border border-zinc-200 overflow-hidden shrink-0 flex items-center justify-center p-1">
+                <img v-if="partner.logo" :src="partner.logo" :alt="partner.name" class="w-full h-full object-contain" />
+                <Building2 v-else :size="16" class="text-zinc-400" />
+              </div>
+              <div>
+                <h3 class="font-bold text-zinc-900 text-xs">{{ partner.name }}</h3>
+                <a v-if="partner.url" :href="partner.url" target="_blank" class="text-[11px] text-[#1B5E20] hover:underline block truncate max-w-[120px]">
+                  Link oficial ↗
+                </a>
+              </div>
             </div>
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-700 mb-1">URL (Opcional)</label>
-              <input v-model="newPartner.url" type="url" placeholder="https://..." class="w-full p-2.5 rounded-lg border border-slate-300 text-sm" />
+
+            <div class="pt-2.5 border-t border-zinc-100 flex items-center justify-between text-xs font-medium">
+              <button @click="openEditModal(partner)" class="text-zinc-700 hover:text-zinc-950 transition-colors cursor-pointer">Editar</button>
+              <button @click="deletePartner(partner.id)" class="text-rose-600 hover:text-rose-700 transition-colors cursor-pointer">Excluir</button>
             </div>
-            <div class="flex justify-end gap-3 pt-4">
-              <button type="button" @click="showModal = false" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Cancelar</button>
-              <button type="submit" class="px-5 py-2 text-xs font-bold bg-coopesq-green text-white rounded-lg shadow-sm">Salvar Parceiro</button>
-            </div>
-          </form>
+          </div>
         </div>
+
+        <AdminPagination 
+          :total="partners.length" 
+          :per-page="perPage" 
+          v-model:current-page="currentPage" 
+        />
       </div>
     </div>
+
+    <PartnerModal 
+      v-if="isModalOpen" 
+      :partner="selectedPartner" 
+      @close="isModalOpen = false" 
+      @saved="loadPartners" 
+    />
   </AdminLayout>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
+import { Plus, Building2 } from 'lucide-vue-next';
 import AdminLayout from '../../Layouts/AdminLayout.vue';
+import PartnerModal from '../../Components/Admin/Partners/PartnerModal.vue';
+import AdminPagination from '../../Components/Admin/Common/AdminPagination.vue';
 
 const partners = ref([]);
-const showModal = ref(false);
-const newPartner = ref({
-  name: '',
-  url: '',
+const isLoading = ref(true);
+const isModalOpen = ref(false);
+const selectedPartner = ref(null);
+const currentPage = ref(1);
+const perPage = 8;
+
+const paginatedPartners = computed(() => {
+  const start = (currentPage.value - 1) * perPage;
+  return partners.value.slice(start, start + perPage);
 });
 
 const loadPartners = async () => {
+  isLoading.value = true;
+  const token = localStorage.getItem('admin_token');
   try {
-    const res = await axios.get('/api/partners');
-    partners.value = res.data || [];
+    const res = await axios.get('/api/admin/partners', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    partners.value = Array.isArray(res.data) ? res.data : (res.data.data || []);
   } catch (err) {
     console.error('Erro ao carregar parceiros:', err);
+  } finally {
+    isLoading.value = false;
   }
 };
 
-const createPartner = async () => {
-  const token = localStorage.getItem('admin_token');
-  try {
-    await axios.post('/api/admin/partners', {
-      ...newPartner.value,
-      logo: '/images/partners/default.png',
-      is_active: true,
-      order: 0,
-    }, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    showModal.value = false;
-    newPartner.value = { name: '', url: '' };
-    loadPartners();
-  } catch (err) {
-    console.error('Erro ao criar parceiro:', err);
-  }
-};
+const openCreateModal = () => { selectedPartner.value = null; isModalOpen.value = true; };
+const openEditModal = (partner) => { selectedPartner.value = { ...partner }; isModalOpen.value = true; };
 
 const deletePartner = async (id) => {
-  if (!confirm('Deseja excluir este parceiro?')) return;
+  if (!confirm('Confirmar exclusão deste parceiro?')) return;
   const token = localStorage.getItem('admin_token');
   try {
-    await axios.delete(`/api/admin/partners/${id}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    await axios.delete(`/api/admin/partners/${id}`, { headers: { Authorization: `Bearer ${token}` } });
     loadPartners();
   } catch (err) {
-    console.error('Erro ao excluir parceiro:', err);
+    alert(err.response?.data?.message || 'Erro ao excluir parceiro.');
   }
 };
 
-onMounted(() => {
-  loadPartners();
-});
+onMounted(loadPartners);
 </script>

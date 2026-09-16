@@ -1,38 +1,130 @@
 <template>
-  <section id="parceiros" class="py-24 bg-white border-y border-slate-100">
-    <div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-      <div v-reveal class="text-center mb-14">
-        <div class="flex items-center justify-center gap-3 mb-4">
-          <div class="h-0.5 w-8 bg-coopesq-orange"></div>
-          <span class="text-xs font-bold text-coopesq-orange uppercase tracking-widest">Quem Atendemos</span>
-          <div class="h-0.5 w-8 bg-coopesq-orange"></div>
+  <section id="parceiros" class="py-16 sm:py-20 bg-white border-y border-slate-100 relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 mb-6 sm:mb-10">
+      <div v-reveal class="flex flex-row items-end justify-between gap-4">
+        <!-- Header institucional -->
+        <div>
+          <span class="text-xs font-bold text-[#F5A623] uppercase tracking-[0.25em] block mb-1.5 sm:mb-2">
+            Trusted By • Nossos Parceiros
+          </span>
+          <h2 class="font-display text-xl sm:text-3xl font-extrabold text-slate-900 uppercase tracking-tight">
+            QUEM CONFIA NA <span class="text-[#1B5E20]">COOPESQ</span>
+          </h2>
+          <div class="w-10 h-0.5 bg-[#1B5E20] mt-2.5 sm:mt-3 rounded-full"></div>
         </div>
-        <h2 class="font-display text-3xl sm:text-4xl font-bold text-slate-900">
-          Parceiros e Clientes Institucionais
-        </h2>
-        <p class="text-slate-500 text-sm mt-3 max-w-md mx-auto">Atendemos prefeituras, universidades, restaurantes e distribuidores com produtos de alta qualidade.</p>
-      </div>
 
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-        <div 
-          v-for="(partner, i) in partners" 
-          :key="partner.id" 
-          v-reveal
-          :class="`delay-${(i % 6 + 1) * 100}`"
-          class="reveal-scale group bg-slate-50 hover:bg-coopesq-green-pale border border-slate-200 hover:border-coopesq-green/30 rounded-2xl p-5 flex flex-col items-center justify-center gap-3 transition-all duration-300 card-lift cursor-default"
-        >
-          <div class="w-12 h-12 rounded-2xl bg-coopesq-green/10 group-hover:bg-coopesq-green/20 flex items-center justify-center text-2xl transition-colors">
-            🏛️
-          </div>
-          <span class="text-xs font-semibold text-slate-700 text-center line-clamp-2 leading-snug">{{ partner.name }}</span>
+        <!-- Controles Interativos do Carrossel -->
+        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <button 
+            @click="scrollPrev"
+            title="Voltar"
+            class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-100 hover:bg-[#1B5E20] text-slate-600 hover:text-white flex items-center justify-center transition-all duration-200 shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+          >
+            <ChevronLeft :size="16" />
+          </button>
+          <button 
+            @click="togglePause"
+            :title="isManualPaused ? 'Retomar reprodução' : 'Pausar reprodução'"
+            class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-100 hover:bg-[#1B5E20] text-slate-600 hover:text-white flex items-center justify-center transition-all duration-200 shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+          >
+            <Play v-if="isManualPaused" :size="14" class="ml-0.5" />
+            <Pause v-else :size="14" />
+          </button>
+          <button 
+            @click="scrollNext"
+            title="Avançar"
+            class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-100 hover:bg-[#1B5E20] text-slate-600 hover:text-white flex items-center justify-center transition-all duration-200 shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+          >
+            <ChevronRight :size="16" />
+          </button>
         </div>
+      </div>
+    </div>
+
+    <!-- Container do Carrossel Contínuo (Sem Cards) -->
+    <div class="relative w-full overflow-hidden">
+      <!-- Máscaras de gradiente nas bordas (efeito horizonte infinito) -->
+      <div class="absolute left-0 inset-y-0 w-8 sm:w-28 bg-gradient-to-r from-white via-white/80 to-transparent pointer-events-none z-10"></div>
+      <div class="absolute right-0 inset-y-0 w-8 sm:w-28 bg-gradient-to-l from-white via-white/80 to-transparent pointer-events-none z-10"></div>
+
+      <!-- Trilho do Carrossel com suporte a Drag & Auto-Scroll -->
+      <div 
+        ref="trackRef"
+        class="flex items-center overflow-x-auto no-scrollbar py-4 cursor-grab active:cursor-grabbing select-none"
+        @mouseenter="isHovered = true"
+        @mouseleave="onMouseLeave"
+        @mousedown="onMouseDown"
+        @mousemove="onMouseMove"
+        @mouseup="onMouseUp"
+      >
+        <PartnerLogoItem 
+          v-for="(partner, idx) in carouselItems" 
+          :key="`${partner.id}-${idx}`"
+          :partner="partner"
+        />
       </div>
     </div>
   </section>
 </template>
 
 <script setup>
-defineProps({
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ChevronLeft, ChevronRight, Play, Pause } from 'lucide-vue-next';
+import PartnerLogoItem from './PartnerLogoItem.vue';
+
+const props = defineProps({
   partners: { type: Array, default: () => [] },
 });
+
+const trackRef = ref(null);
+const isHovered = ref(false);
+const isManualPaused = ref(false);
+const isDragging = ref(false);
+const startX = ref(0);
+const scrollStart = ref(0);
+let rafId = null;
+
+const carouselItems = computed(() => {
+  if (!props.partners.length) return [];
+  return [...props.partners, ...props.partners, ...props.partners];
+});
+
+const scrollSpeed = 0.75;
+
+const tick = () => {
+  if (trackRef.value && !isHovered.value && !isManualPaused.value && !isDragging.value) {
+    trackRef.value.scrollLeft += scrollSpeed;
+    const oneThird = trackRef.value.scrollWidth / 3;
+    if (trackRef.value.scrollLeft >= oneThird * 2) {
+      trackRef.value.scrollLeft -= oneThird;
+    }
+  }
+  rafId = requestAnimationFrame(tick);
+};
+
+const scrollPrev = () => trackRef.value?.scrollBy({ left: -280, behavior: 'smooth' });
+const scrollNext = () => trackRef.value?.scrollBy({ left: 280, behavior: 'smooth' });
+const togglePause = () => { isManualPaused.value = !isManualPaused.value; };
+
+const onMouseDown = (e) => {
+  isDragging.value = true;
+  startX.value = e.pageX - trackRef.value.offsetLeft;
+  scrollStart.value = trackRef.value.scrollLeft;
+};
+const onMouseMove = (e) => {
+  if (!isDragging.value) return;
+  e.preventDefault();
+  const x = e.pageX - trackRef.value.offsetLeft;
+  trackRef.value.scrollLeft = scrollStart.value - (x - startX.value) * 1.5;
+};
+const onMouseUp = () => { isDragging.value = false; };
+const onMouseLeave = () => { isHovered.value = false; isDragging.value = false; };
+
+onMounted(() => { rafId = requestAnimationFrame(tick); });
+onUnmounted(() => { if (rafId) cancelAnimationFrame(rafId); });
 </script>
+
+<style scoped>
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>

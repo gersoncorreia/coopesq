@@ -1,29 +1,40 @@
 <template>
-  <header class="sticky top-0 z-50 transition-all duration-300" :class="scrolled ? 'bg-coopesq-dark/95 backdrop-blur-xl shadow-2xl shadow-black/20' : 'bg-transparent'">
+  <header 
+    class="w-full transition-all duration-300" 
+    :class="scrolled ? 'bg-[#071309]/95 backdrop-blur-md shadow-xl shadow-black/40 border-b border-emerald-950/40 py-0' : 'bg-transparent py-1'"
+  >
     <div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-      <div class="flex items-center justify-between h-20">
+      <div class="flex items-center justify-between h-20 transition-all duration-300" :class="scrolled ? 'h-16' : 'h-20'">
         <!-- Logo Brand -->
-        <router-link to="/" class="flex items-center space-x-3 group">
-          <div class="relative">
-            <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-coopesq-orange to-amber-400 flex items-center justify-center font-black text-white text-lg shadow-lg group-hover:scale-105 transition-all duration-300">
-              C
+        <a href="/" @click.prevent="navigateToHome" class="flex items-center space-x-3 group cursor-pointer">
+          <template v-if="settingsStore.general.site_logo_header || settingsStore.general.site_logo">
+            <img 
+              :src="settingsStore.general.site_logo_header || settingsStore.general.site_logo" 
+              :alt="settingsStore.general.site_name || 'COOPESQ'" 
+              class="h-11 sm:h-12 w-auto max-w-[220px] object-contain group-hover:scale-105 transition-all duration-300"
+            />
+          </template>
+          <template v-else>
+            <div class="relative">
+              <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#1B5E20] via-[#236e29] to-[#123e15] border border-emerald-400/30 flex items-center justify-center font-black text-white text-lg shadow-lg group-hover:scale-105 transition-all duration-300">
+                <span class="text-[#F5A623]">C</span>
+              </div>
+              <div class="absolute -top-0.5 -right-0.5 w-3 h-3 bg-[#F5A623] rounded-full border-2 border-coopesq-dark shadow-xs"></div>
             </div>
-            <div class="absolute -top-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-coopesq-dark"></div>
-          </div>
-          <div>
-            <span class="font-black text-xl tracking-wide block text-white">COOPESQ</span>
-            <span class="text-xs text-emerald-300/70 font-medium hidden sm:block tracking-widest uppercase">Cooperativa Amazônica</span>
-          </div>
-        </router-link>
+            <div>
+              <span class="font-black text-xl tracking-wider block text-white">{{ settingsStore.general.site_name || 'COOPESQ' }}</span>
+            </div>
+          </template>
+        </a>
 
         <!-- Desktop Navigation -->
-        <nav class="hidden md:flex items-center space-x-1 text-sm font-semibold">
-          <router-link to="/" class="px-4 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200">Início</router-link>
-          <a href="#sobre" @click.prevent="scrollTo('sobre')" class="px-4 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200">Sobre</a>
-          <a href="#produtos" @click.prevent="scrollTo('produtos')" class="px-4 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200">Produtos</a>
-          <a href="#parceiros" @click.prevent="scrollTo('parceiros')" class="px-4 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200">Parceiros</a>
-          <router-link to="/blog" class="px-4 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200">Blog</router-link>
-          <a href="#contato" @click.prevent="scrollTo('contato')" class="px-4 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200">Contato</a>
+        <nav class="hidden md:flex items-center space-x-7 text-sm font-semibold">
+          <a href="/" @click.prevent="navigateToHome" class="nav-link-animated text-white/80 hover:text-white py-1 transition-colors cursor-pointer">Início</a>
+          <a href="#sobre" @click.prevent="navigateToSection('sobre')" class="nav-link-animated text-white/80 hover:text-white py-1 transition-colors cursor-pointer">Sobre</a>
+          <a href="#produtos" @click.prevent="navigateToSection('produtos')" class="nav-link-animated text-white/80 hover:text-white py-1 transition-colors cursor-pointer">Produtos</a>
+          <a href="#parceiros" @click.prevent="navigateToSection('parceiros')" class="nav-link-animated text-white/80 hover:text-white py-1 transition-colors cursor-pointer">Parceiros</a>
+          <router-link to="/blog" class="nav-link-animated text-white/80 hover:text-white py-1 transition-colors cursor-pointer">Blog</router-link>
+          <a href="#contato" @click.prevent="navigateToSection('contato')" class="nav-link-animated text-white/80 hover:text-white py-1 transition-colors cursor-pointer">Contato</a>
         </nav>
 
         <!-- CTA Button -->
@@ -34,9 +45,9 @@
           </a>
           <router-link 
             to="/admin/login" 
-            class="bg-coopesq-orange hover:bg-amber-400 text-slate-900 font-bold px-5 py-2.5 rounded-xl transition-all duration-200 shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 text-sm"
+            class="bg-[#F5A623] hover:bg-[#e69512] text-zinc-950 font-bold px-4 py-2 rounded-xl transition-all duration-200 shadow-md shadow-amber-500/15 text-xs flex items-center gap-1.5 border border-amber-300/40"
           >
-            Área Restrita
+            <span>Área Restrita</span>
           </router-link>
         </div>
 
@@ -52,14 +63,15 @@
 
     <!-- Mobile menu -->
     <Transition name="slide-down">
-      <div v-if="isOpen" class="md:hidden bg-coopesq-dark/98 backdrop-blur-xl border-t border-white/10 px-4 pt-4 pb-6 space-y-1">
-        <router-link to="/" class="block px-4 py-3 text-white/80 font-semibold rounded-xl hover:bg-white/10 hover:text-white transition-all">Início</router-link>
-        <a href="#sobre" @click="isOpen = false" class="block px-4 py-3 text-white/80 font-semibold rounded-xl hover:bg-white/10 hover:text-white transition-all">Sobre Nós</a>
-        <a href="#produtos" @click="isOpen = false" class="block px-4 py-3 text-white/80 font-semibold rounded-xl hover:bg-white/10 hover:text-white transition-all">Produtos</a>
-        <router-link to="/blog" class="block px-4 py-3 text-white/80 font-semibold rounded-xl hover:bg-white/10 hover:text-white transition-all">Blog</router-link>
-        <a href="#contato" @click="isOpen = false" class="block px-4 py-3 text-white/80 font-semibold rounded-xl hover:bg-white/10 hover:text-white transition-all">Contato</a>
+      <div v-if="isOpen" class="md:hidden bg-[#071309]/98 backdrop-blur-xl border-t border-white/10 px-4 pt-4 pb-6 space-y-1">
+        <a href="/" @click.prevent="navigateToHome" class="block px-4 py-3 text-white/80 font-semibold rounded-xl hover:bg-white/10 hover:text-white transition-all cursor-pointer">Início</a>
+        <a href="#sobre" @click.prevent="navigateToSection('sobre')" class="block px-4 py-3 text-white/80 font-semibold rounded-xl hover:bg-white/10 hover:text-white transition-all">Sobre Nós</a>
+        <a href="#produtos" @click.prevent="navigateToSection('produtos')" class="block px-4 py-3 text-white/80 font-semibold rounded-xl hover:bg-white/10 hover:text-white transition-all">Produtos</a>
+        <a href="#parceiros" @click.prevent="navigateToSection('parceiros')" class="block px-4 py-3 text-white/80 font-semibold rounded-xl hover:bg-white/10 hover:text-white transition-all">Parceiros</a>
+        <router-link to="/blog" @click="isOpen = false" class="block px-4 py-3 text-white/80 font-semibold rounded-xl hover:bg-white/10 hover:text-white transition-all">Blog</router-link>
+        <a href="#contato" @click.prevent="navigateToSection('contato')" class="block px-4 py-3 text-white/80 font-semibold rounded-xl hover:bg-white/10 hover:text-white transition-all">Contato</a>
         <div class="pt-3 border-t border-white/10 mt-3">
-          <router-link to="/admin/login" class="flex items-center justify-center gap-2 bg-coopesq-orange text-slate-900 font-bold px-4 py-3 rounded-xl text-sm shadow-lg">
+          <router-link to="/admin/login" class="flex items-center justify-center gap-2 bg-[#F5A623] text-zinc-950 font-bold px-4 py-3 rounded-xl text-sm shadow-lg">
             Área Restrita
           </router-link>
         </div>
@@ -70,6 +82,12 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useSettingsStore } from '../stores/useSettingsStore';
+
+const settingsStore = useSettingsStore();
+const route = useRoute();
+const router = useRouter();
 
 const isOpen = ref(false);
 const scrolled = ref(false);
@@ -78,10 +96,27 @@ const handleScroll = () => {
   scrolled.value = window.scrollY > 50;
 };
 
-const scrollTo = (id) => {
-  const el = document.getElementById(id);
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+const navigateToSection = async (id) => {
   isOpen.value = false;
+  if (route.path !== '/') {
+    await router.push({ path: '/', hash: `#${id}` });
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 250);
+  } else {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+};
+
+const navigateToHome = () => {
+  isOpen.value = false;
+  if (route.path === '/') {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else {
+    router.push('/');
+  }
 };
 
 onMounted(() => window.addEventListener('scroll', handleScroll));

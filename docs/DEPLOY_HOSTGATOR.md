@@ -150,16 +150,22 @@ php artisan key:generate
 
 ---
 
-## ⚙️ Passo 4: Executar Migrações e Populador de Dados (Seeder)
+## ⚙️ Passo 4: Executar Migrações, Populador de Dados (Seeders) e Link de Storage
 
-Dentro da pasta `~/coopesq_app`, execute:
+Dentro da pasta `~/coopesq_app`, execute os comandos abaixo:
 
 ```bash
-# Criar tabelas e popular as 15 configurações whitelabel, categorias e produtos
+# 1. Executar migrações do banco de dados
 php artisan migrate --force
+
+# 2. Popular o banco com os seeders modulares atualizados (20 configurações, banners, 12 parceiros em SVG, catálogo e blog)
 php artisan db:seed --force
 
-# Otimizar caches de rotas e configurações do Laravel
+# 3. Criar link simbólico do storage (Essencial para exibir logotipos, banners e imagens em /storage/uploads/)
+php artisan storage:link
+
+# 4. Limpar e otimizar caches de configuração, rotas e views do Laravel
+php artisan optimize:clear
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
@@ -242,20 +248,41 @@ chmod -R 775 ~/coopesq_app/bootstrap/cache
 
 ---
 
-## 🔄 Como Atualizar o Site no Futuro (Deploy Contínuo)
-
-Quando você fizer alterações no seu computador e der `git push origin main`:
-
-### Via SSH:
+## 🔄 Como Atualizar o Site no Servidor de Produção (Deploy das Novas Versões)
+ 
+Sempre que fizer alterações no projeto e enviar para o GitHub (`git push origin main`), execute os passos abaixo no servidor de produção para aplicar as novidades imediatamente:
+ 
+### Opção A: Via Terminal SSH (Recomendado)
 ```bash
 cd ~/coopesq_app
+
+# 1. Puxar as últimas alterações do GitHub (inclui assets compilados, novos componentes e seeders)
 git pull origin main
+
+# 2. Aplicar eventuais migrações de banco
+php artisan migrate --force
+
+# 3. Atualizar dados cadastrais institucionais, banners e parceiros atualizados
+php artisan db:seed --force
+
+# 4. Garantir que o link de storage continue ativo
+php artisan storage:link
+
+# 5. Limpar e reaquecer todos os caches do Laravel
+php artisan optimize:clear
 php artisan config:cache
 php artisan route:cache
+php artisan view:cache
 ```
-
-### Via cPanel (Git™ Version Control):
-Acesse cPanel > **Git™ Version Control** > clique no repositório `coopesq` > selecione a aba **Pull or Deploy** > clique no botão **"Pull from Remote"**.
+ 
+### Opção B: Via cPanel (Git™ Version Control)
+1. Acesse **cPanel > Git™ Version Control**.
+2. Clique em **Gerenciar (Manage)** no repositório `coopesq`.
+3. Na aba **Pull or Deploy**, clique no botão azul **"Pull from Remote"**.
+4. No terminal do cPanel, rode:
+   ```bash
+   cd ~/coopesq_app && php artisan db:seed --force && php artisan optimize:clear && php artisan config:cache && php artisan route:cache
+   ```
 
 ---
 

@@ -54,7 +54,7 @@ Route::post('/admin/login', function (Request $request) {
             'role' => $user->role,
         ],
     ]);
-});
+})->middleware('throttle:5,1');
 
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('/stats', [AdminApiController::class, 'stats']);
@@ -68,4 +68,6 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::apiResource('partners', \App\Http\Controllers\Api\Admin\PartnerAdminController::class)->except(['create', 'edit']);
     Route::apiResource('banners', \App\Http\Controllers\Api\Admin\BannerAdminController::class)->except(['create', 'edit']);
     Route::apiResource('testimonials', \App\Http\Controllers\Api\Admin\TestimonialAdminController::class)->except(['create', 'edit']);
+    Route::apiResource('users', \App\Http\Controllers\Api\Admin\UserAdminController::class)->except(['create', 'edit']);
 });
+

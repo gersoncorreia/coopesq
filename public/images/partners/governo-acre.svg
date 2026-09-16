@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 56" width="210" height="56">
+  <g transform="translate(6, 6)">
+    <g transform="scale(1.83)">
+      <rect x="3" y="3" width="18" height="18" rx="4" fill="#1B5E20"/><polygon points="12,6 13.8,11.5 19.5,11.5 14.8,14.8 16.5,20.2 12,17 7.5,20.2 9.2,14.8 4.5,11.5 10.2,11.5" fill="#E53935"/>
+    </g>
+  </g>
+  <g transform="translate(58, 20)">
+    <text x="0" y="0" font-family="'Montserrat', 'Inter', system-ui, sans-serif" font-size="8.5" font-weight="700" fill="#64748B" letter-spacing="1.2">GOVERNO DO ESTADO</text>
+    <text x="0" y="19" font-family="'Montserrat', 'Inter', system-ui, sans-serif" font-size="14.5" font-weight="900" fill="#1B5E20" letter-spacing="-0.3">DO ACRE</text>
+  </g>
+</svg>

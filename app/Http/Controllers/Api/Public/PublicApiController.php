@@ -72,14 +72,14 @@ class PublicApiController extends Controller
     {
         $query = Post::with(['category', 'author:id,name'])->where('is_published', true)->orderBy('published_at', 'desc');
 
-        if ($request->has('category')) {
+        if ($request->filled('category') && $request->category !== 'all') {
             $query->whereHas('category', function ($q) use ($request) {
                 $q->where('slug', $request->category);
             });
         }
 
-        if ($request->has('search')) {
-            $search = $request->search;
+        if ($request->filled('search')) {
+            $search = trim($request->search);
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
                   ->orWhere('excerpt', 'like', "%{$search}%");

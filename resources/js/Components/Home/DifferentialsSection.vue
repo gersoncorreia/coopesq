@@ -1,37 +1,35 @@
 <template>
-  <section id="diferenciais" class="py-24 sm:py-28 bg-coopesq-dark relative overflow-hidden">
-    <div class="absolute top-0 left-1/2 w-[800px] h-[600px] bg-coopesq-green/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
-    
-    <div class="relative max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-      <!-- Header -->
-      <div v-reveal class="text-center max-w-2xl mx-auto mb-16 sm:mb-20">
-        <div class="flex items-center justify-center gap-3 mb-4">
-          <div class="h-0.5 w-8 bg-coopesq-orange"></div>
-          <span class="text-xs font-bold text-coopesq-orange uppercase tracking-widest">Nossos Diferenciais</span>
-          <div class="h-0.5 w-8 bg-coopesq-orange"></div>
-        </div>
-        <h2 class="font-display text-3xl sm:text-5xl font-bold text-white leading-tight">
-          Por que escolher a <span class="gradient-text">COOPESQ</span>?
+  <section id="diferenciais" class="py-24 sm:py-32 bg-slate-50 relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 relative z-10">
+      <!-- Header no padrão Khela -->
+      <div v-reveal class="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
+        <span class="text-xs font-bold text-[#F5A623] uppercase tracking-[0.25em] block mb-2">
+          Our Best Services • Nossos Diferenciais
+        </span>
+        <h2 class="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 uppercase tracking-tight">
+          POR QUE ESCOLHER A <span class="text-[#1B5E20]">COOPESQ</span>
         </h2>
+        <div class="w-12 h-1 bg-[#1B5E20] mx-auto mt-4 rounded-full"></div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <div 
           v-for="(diff, i) in differentials" 
-          :key="diff.id"
+          :key="diff.id" 
           v-reveal
           :class="`delay-${(i + 1) * 100}`"
-          class="reveal-scale group relative glass rounded-3xl p-7 hover:bg-white/10 transition-all duration-300 card-lift cursor-default"
+          class="reveal-scale group bg-white rounded-xl p-7 border border-slate-200/80 hover:border-[#1B5E20]/40 shadow-xs hover:shadow-xl transition-all duration-300 card-lift"
         >
-          <div class="text-coopesq-orange/20 font-display font-bold text-6xl absolute top-4 right-5 leading-none select-none">
-            {{ String(i + 1).padStart(2, '0') }}
-          </div>
-          <div class="relative w-12 h-12 bg-coopesq-orange/20 border border-coopesq-orange/30 rounded-2xl flex items-center justify-center text-xl mb-6 group-hover:bg-coopesq-orange/30 transition-colors">
+          <div class="w-13 h-13 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center text-2xl mb-5 group-hover:bg-[#1B5E20] group-hover:text-white transition-colors">
             {{ getDiffIcon(diff.title) }}
           </div>
-          <h3 class="text-white font-bold text-lg mb-3">{{ diff.title }}</h3>
-          <p class="text-white/50 text-sm leading-relaxed">{{ diff.description }}</p>
-          <div class="mt-6 h-0.5 bg-gradient-to-r from-coopesq-orange/60 to-transparent rounded-full"></div>
+          <h3 class="text-slate-900 font-bold text-base mb-2 group-hover:text-[#1B5E20] transition-colors leading-snug">
+            {{ diff.title }}
+          </h3>
+          <p class="text-slate-500 text-xs leading-relaxed">
+            {{ diff.description }}
+          </p>
+          <div class="mt-5 w-8 h-0.5 bg-[#F5A623] group-hover:w-full transition-all duration-300 rounded-full"></div>
         </div>
       </div>
     </div>

@@ -17,6 +17,7 @@ export const vReveal = {
   mounted(el, binding) {
     // Default base class if not already added
     if (!el.classList.contains('reveal') && 
+        !el.classList.contains('reveal-down') && 
         !el.classList.contains('reveal-scale') && 
         !el.classList.contains('reveal-left') && 
         !el.classList.contains('reveal-right')) {
