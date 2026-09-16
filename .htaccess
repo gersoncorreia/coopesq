@@ -1,3 +1,14 @@
+# Bloqueio estrito de arquivos sensíveis e de configuração
+<FilesMatch "(^\.env|^\.git|composer\.(json|lock)|package(-lock)?\.json|\.(sql|log|bak|sqlite|sh))$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteRule ^$ public/ [L]

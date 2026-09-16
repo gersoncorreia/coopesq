@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\HeroBanner;
+use App\Services\HtmlSanitizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -11,12 +12,26 @@ class BannerAdminController extends Controller
 {
     public function index()
     {
-        return response()->json(HeroBanner::all());
+        return response()->json(HeroBanner::orderBy('order', 'asc')->get());
     }
 
     public function store(Request $request)
     {
-        $banner = HeroBanner::create($request->all());
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'subtitle' => 'nullable|string|max:500',
+            'image' => 'required|string|max:1000',
+            'cta_text' => 'nullable|string|max:100',
+            'cta_url' => 'nullable|string|max:1000',
+            'is_active' => 'boolean',
+            'order' => 'nullable|integer|min:0',
+        ]);
+
+        $validated['cta_url'] = HtmlSanitizer::cleanUrl($validated['cta_url'] ?? null);
+        $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['order'] = $validated['order'] ?? 0;
+
+        $banner = HeroBanner::create($validated);
         Cache::forget('coopesq_banners');
         return response()->json($banner, 201);
     }
@@ -29,7 +44,21 @@ class BannerAdminController extends Controller
     public function update(Request $request, $id)
     {
         $banner = HeroBanner::findOrFail($id);
-        $banner->update($request->all());
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'subtitle' => 'nullable|string|max:500',
+            'image' => 'required|string|max:1000',
+            'cta_text' => 'nullable|string|max:100',
+            'cta_url' => 'nullable|string|max:1000',
+            'is_active' => 'boolean',
+            'order' => 'nullable|integer|min:0',
+        ]);
+
+        $validated['cta_url'] = HtmlSanitizer::cleanUrl($validated['cta_url'] ?? null);
+        $validated['is_active'] = $request->boolean('is_active');
+
+        $banner->update($validated);
         Cache::forget('coopesq_banners');
         return response()->json($banner);
     }
@@ -38,6 +67,6 @@ class BannerAdminController extends Controller
     {
         HeroBanner::destroy($id);
         Cache::forget('coopesq_banners');
-        return response()->json(['message' => 'Deleted']);
+        return response()->json(['message' => 'Banner excluído com sucesso!']);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Partner;
+use App\Services\HtmlSanitizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -11,12 +12,24 @@ class PartnerAdminController extends Controller
 {
     public function index()
     {
-        return response()->json(Partner::all());
+        return response()->json(Partner::orderBy('order', 'asc')->get());
     }
 
     public function store(Request $request)
     {
-        $partner = Partner::create($request->all());
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'logo' => 'required|string|max:1000',
+            'url' => 'nullable|string|max:1000',
+            'is_active' => 'boolean',
+            'order' => 'nullable|integer|min:0',
+        ]);
+
+        $validated['url'] = HtmlSanitizer::cleanUrl($validated['url'] ?? null);
+        $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['order'] = $validated['order'] ?? 0;
+
+        $partner = Partner::create($validated);
         Cache::forget('coopesq_partners');
         return response()->json($partner, 201);
     }
@@ -29,7 +42,19 @@ class PartnerAdminController extends Controller
     public function update(Request $request, $id)
     {
         $partner = Partner::findOrFail($id);
-        $partner->update($request->all());
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'logo' => 'required|string|max:1000',
+            'url' => 'nullable|string|max:1000',
+            'is_active' => 'boolean',
+            'order' => 'nullable|integer|min:0',
+        ]);
+
+        $validated['url'] = HtmlSanitizer::cleanUrl($validated['url'] ?? null);
+        $validated['is_active'] = $request->boolean('is_active');
+
+        $partner->update($validated);
         Cache::forget('coopesq_partners');
         return response()->json($partner);
     }
@@ -38,6 +63,6 @@ class PartnerAdminController extends Controller
     {
         Partner::destroy($id);
         Cache::forget('coopesq_partners');
-        return response()->json(['message' => 'Deleted']);
+        return response()->json(['message' => 'Parceiro excluído com sucesso!']);
     }
 }

@@ -106,7 +106,18 @@ class AdminApiController extends Controller
             ],
         ]);
 
-        $path = $request->file('file')->store('uploads', 'public');
+        $file = $request->file('file');
+
+        if (in_array(strtolower($file->getClientOriginalExtension()), ['svg', 'svgz']) || $file->getMimeType() === 'image/svg+xml') {
+            $content = file_get_contents($file->getRealPath());
+            if (preg_match('/<script|onload|onerror|onclick|onmouseover|javascript:|data:text\/html/i', $content)) {
+                return response()->json([
+                    'message' => 'O arquivo SVG contém scripts ou elementos executáveis não permitidos por segurança.'
+                ], 422);
+            }
+        }
+
+        $path = $file->store('uploads', 'public');
         $relativeUrl = '/storage/' . $path;
 
         return response()->json([

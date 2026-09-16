@@ -57,6 +57,7 @@
 </template>
 
 <script setup>
+import axios from 'axios';
 import { useRouter } from 'vue-router';
 import { 
   LayoutDashboard, Settings, Package, FileText, Images, 
@@ -95,7 +96,15 @@ const menuSections = [
   }
 ];
 
-const logout = () => {
+const logout = async () => {
+  const token = localStorage.getItem('admin_token');
+  try {
+    if (token) {
+      await axios.post('/api/admin/logout', {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    }
+  } catch {}
   localStorage.removeItem('admin_token');
   router.push('/admin/login');
 };

@@ -11,12 +11,13 @@ class TestimonialAdminController extends Controller
 {
     public function index()
     {
-        return response()->json(Testimonial::all());
+        return response()->json(Testimonial::orderBy('order', 'asc')->get());
     }
 
     public function store(Request $request)
     {
-        $testimonial = Testimonial::create($request->all());
+        $data = $this->validateData($request);
+        $testimonial = Testimonial::create($data);
         Cache::forget('coopesq_testimonials');
         return response()->json($testimonial, 201);
     }
@@ -29,7 +30,8 @@ class TestimonialAdminController extends Controller
     public function update(Request $request, $id)
     {
         $testimonial = Testimonial::findOrFail($id);
-        $testimonial->update($request->all());
+        $data = $this->validateData($request);
+        $testimonial->update($data);
         Cache::forget('coopesq_testimonials');
         return response()->json($testimonial);
     }
@@ -38,6 +40,24 @@ class TestimonialAdminController extends Controller
     {
         Testimonial::destroy($id);
         Cache::forget('coopesq_testimonials');
-        return response()->json(['message' => 'Deleted']);
+        return response()->json(['message' => 'Depoimento excluído com sucesso!']);
+    }
+
+    private function validateData(Request $request): array
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:191',
+            'role' => 'nullable|string|max:191',
+            'content' => 'required|string|max:2000',
+            'image' => 'nullable|string|max:500',
+            'is_active' => 'nullable|boolean',
+            'order' => 'nullable|integer',
+        ]);
+
+        $validated['name'] = strip_tags($validated['name']);
+        $validated['role'] = !empty($validated['role']) ? strip_tags($validated['role']) : null;
+        $validated['content'] = strip_tags($validated['content']);
+
+        return $validated;
     }
 }
