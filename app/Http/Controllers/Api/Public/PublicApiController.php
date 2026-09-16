@@ -16,126 +16,107 @@ use Illuminate\Support\Facades\Cache;
 
 class PublicApiController extends Controller
 {
-    /**
-     * Get grouped public settings.
-     */
     public function settings()
     {
-        $settings = Setting::all();
+        $data = Cache::remember('coopesq_public_settings', 3600, function () {
+            $settings = Setting::all();
+            return [
+                'general' => $settings->where('group', 'general')->pluck('value', 'key')->toArray(),
+                'contacts' => $settings->where('group', 'contacts')->pluck('value', 'key')->toArray(),
+                'socials' => $settings->where('group', 'socials')->pluck('value', 'key')->toArray(),
+                'seo' => $settings->where('group', 'seo')->pluck('value', 'key')->toArray(),
+            ];
+        });
 
-        return response()->json([
-            'general' => $settings->where('group', 'general')->pluck('value', 'key')->toArray(),
-            'contacts' => $settings->where('group', 'contacts')->pluck('value', 'key')->toArray(),
-            'socials' => $settings->where('group', 'socials')->pluck('value', 'key')->toArray(),
-            'seo' => $settings->where('group', 'seo')->pluck('value', 'key')->toArray(),
-        ]);
+        return response()->json($data);
     }
 
-    /**
-     * Get dynamic active page by slug.
-     */
     public function page($slug)
     {
-        $page = Page::where('slug', $slug)->where('is_active', true)->firstOrFail();
+        $page = Cache::remember("coopesq_page_{$slug}", 3600, fn() =>
+            Page::where('slug', $slug)->where('is_active', true)->first()
+        );
+
+        abort_if(!$page, 404);
         return response()->json($page);
     }
 
-    /**
-     * Get paginated active products with category filtering.
-     */
     public function products(Request $request)
     {
         $query = Product::with('category')->where('is_active', true)->orderBy('order', 'asc');
 
         if ($request->has('category') && $request->category !== 'all') {
-            $query->whereHas('category', function ($q) use ($request) {
-                $q->where('slug', $request->category);
-            });
+            $query->whereHas('category', fn($q) => $q->where('slug', $request->category));
         }
 
         return response()->json($query->paginate(12));
     }
 
-    /**
-     * Get single product by slug.
-     */
     public function product($slug)
     {
         $product = Product::with('category')->where('slug', $slug)->where('is_active', true)->firstOrFail();
         return response()->json($product);
     }
 
-    /**
-     * Get published blog posts.
-     */
     public function posts(Request $request)
     {
         $query = Post::with(['category', 'author:id,name'])->where('is_published', true)->orderBy('published_at', 'desc');
 
         if ($request->filled('category') && $request->category !== 'all') {
-            $query->whereHas('category', function ($q) use ($request) {
-                $q->where('slug', $request->category);
-            });
+            $query->whereHas('category', fn($q) => $q->where('slug', $request->category));
         }
 
         if ($request->filled('search')) {
             $search = trim($request->search);
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('excerpt', 'like', "%{$search}%");
-            });
+            $query->where(fn($q) =>
+                $q->where('title', 'like', "%{$search}%")->orWhere('excerpt', 'like', "%{$search}%")
+            );
         }
 
         return response()->json($query->paginate(6));
     }
 
-    /**
-     * Get single post by slug and increment views.
-     */
-    public function post($slug)
+    public function post(Request $request, $slug)
     {
         $post = Post::with(['category', 'author:id,name'])->where('slug', $slug)->where('is_published', true)->firstOrFail();
-        $post->increment('views');
+
+        $cacheKey = 'post_view_' . $post->id . '_' . md5($request->ip());
+        if (Cache::add($cacheKey, true, now()->addHour())) {
+            $post->increment('views');
+        }
+
         return response()->json($post);
     }
 
-    /**
-     * Get active partners.
-     */
     public function partners()
     {
-        return response()->json(
+        $data = Cache::remember('coopesq_partners', 3600, fn() =>
             Partner::where('is_active', true)->orderBy('order', 'asc')->get()
         );
+        return response()->json($data);
     }
 
-    /**
-     * Get active differentials.
-     */
     public function differentials()
     {
-        return response()->json(
+        $data = Cache::remember('coopesq_differentials', 3600, fn() =>
             Differential::where('is_active', true)->orderBy('order', 'asc')->get()
         );
+        return response()->json($data);
     }
 
-    /**
-     * Get active hero banners.
-     */
     public function banners()
     {
-        return response()->json(
+        $data = Cache::remember('coopesq_banners', 3600, fn() =>
             HeroBanner::where('is_active', true)->orderBy('order', 'asc')->get()
         );
+        return response()->json($data);
     }
 
-    /**
-     * Get active testimonials.
-     */
     public function testimonials()
     {
-        return response()->json(
+        $data = Cache::remember('coopesq_testimonials', 3600, fn() =>
             Testimonial::where('is_active', true)->orderBy('order', 'asc')->get()
         );
+        return response()->json($data);
     }
 }

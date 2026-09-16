@@ -298,6 +298,30 @@ php artisan view:cache
 
 ---
 
+---
+
+## 🛡️ Passo 9: Proteção Anti-DDoS e Aceleração de Borda com Cloudflare (Gratuito)
+
+Para blindar o servidor da HostGator contra ataques **DDoS volumétricos (SYN/UDP flood e HTTP flood massivo)**, recomenda-se passar o domínio pela **Cloudflare (Plano Grátis)**:
+
+### 1. Conectar o Domínio à Cloudflare:
+1. Crie uma conta gratuita em [cloudflare.com](https://cloudflare.com).
+2. Adicione seu domínio raiz (`soulsync.ia.br`). O plano **Free** já inclui proteção ilimitada contra ataques DDoS L3/L4/L7.
+3. No seu registrador de domínio (ex: Registro.br), troque os servidores DNS pelos nameservers informados pela Cloudflare.
+
+### 2. Configurar o Subdomínio `coopesq`:
+1. No painel da Cloudflare, vá em **DNS > Records**.
+2. Certifique-se de que a entrada do tipo `A` ou `CNAME` para `coopesq` está com a **Nuvem Laranja Ativada (Proxied)**.
+   - **Efeito Imediato**: O endereço IP real da HostGator fica 100% oculto do mundo exterior.
+
+### 3. Configurações Recomendadas de Segurança e Performance:
+- **SSL/TLS**: Selecione o modo **Full** (ou **Full Strict**) para tráfego criptografado de ponta a ponta.
+- **Segurança contra Bots**: Acesse **Security > Bots** e marque **Bot Fight Mode** (bloqueia automaticamente scrapers maliciosos e robôs de ataque).
+- **Regra de Cache (Edge Caching)**: Todo o CSS, JS e imagens da pasta `/build/assets/` passam a ser entregues pela rede de borda da Cloudflare mais próxima do visitante, aliviando mais de 80% do tráfego do servidor HostGator.
+- **Sob Ataque (Under Attack Mode)**: Caso detecte qualquer tentativa de ataque DDoS anormal deixando o site lento, acesse a página inicial da Cloudflare e ative o botão **"Under Attack Mode"**. A Cloudflare apresentará um desafio invisível de 5 segundos aos visitantes, barrando 100% das botnets antes de atingirem a HostGator.
+
+---
+
 ## ⚡ Solução de Erros Frequentes na HostGator
 
 | Erro | Causa Provável | Solução Passo a Passo |

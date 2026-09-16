@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Page;
 use App\Services\HtmlSanitizer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -25,6 +26,7 @@ class PageAdminController extends Controller
         }
 
         $page = Page::create($data);
+        Cache::forget("coopesq_page_{$page->slug}");
         return response()->json($page, 201);
     }
 
@@ -36,6 +38,7 @@ class PageAdminController extends Controller
     public function update(Request $request, $id)
     {
         $page = Page::findOrFail($id);
+        $oldSlug = $page->slug;
         $data = $this->validateAndSanitize($request, $page->id);
 
         if (empty($data['slug'])) {
@@ -43,12 +46,16 @@ class PageAdminController extends Controller
         }
 
         $page->update($data);
+        Cache::forget("coopesq_page_{$oldSlug}");
+        Cache::forget("coopesq_page_{$page->slug}");
         return response()->json($page);
     }
 
     public function destroy($id)
     {
-        Page::destroy($id);
+        $page = Page::findOrFail($id);
+        Cache::forget("coopesq_page_{$page->slug}");
+        $page->delete();
         return response()->json(['message' => 'Página excluída com sucesso!']);
     }
 
