@@ -16,8 +16,9 @@
             v-model="email" 
             type="email" 
             required 
-            placeholder="admin@coopesq.com.br"
-            class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-coopesq-green text-sm"
+            autocomplete="email"
+            placeholder="seu.email@coopesq.com.br"
+            class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1B5E20] text-sm"
           />
         </div>
 
@@ -27,8 +28,9 @@
             v-model="password" 
             type="password" 
             required 
-            placeholder="••••••••"
-            class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-coopesq-green text-sm"
+            autocomplete="current-password"
+            placeholder="Digite sua senha"
+            class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1B5E20] text-sm"
           />
         </div>
 
@@ -39,7 +41,7 @@
         <button 
           type="submit" 
           :disabled="loading"
-          class="w-full bg-coopesq-green hover:bg-coopesq-green-dark text-white font-bold py-3 rounded-lg transition-all shadow-md text-sm"
+          class="w-full bg-[#1B5E20] hover:bg-[#144718] text-white font-bold py-3 rounded-lg transition-all shadow-md text-sm cursor-pointer disabled:opacity-50"
         >
           {{ loading ? 'Autenticando...' : 'Entrar no Painel' }}
         </button>
@@ -54,8 +56,8 @@ import { useRouter } from 'vue-router';
 import axios from 'axios';
 
 const router = useRouter();
-const email = ref('admin@coopesq.com.br');
-const password = ref('password');
+const email = ref('');
+const password = ref('');
 const error = ref('');
 const loading = ref(false);
 
