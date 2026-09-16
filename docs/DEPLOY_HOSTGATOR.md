@@ -291,9 +291,10 @@ php artisan view:cache
 1. **Portal Público**: Acesse `https://coopesq.soulsync.ia.br`
    - Teste as imagens, catálogo de produtos e animações Scroll-Reveal.
 2. **Painel Administrativo**: Acesse `https://coopesq.soulsync.ia.br/admin`
-   - **Login**: `admin@coopesq.com.br`
-   - **Senha**: `password`
-   - Edite e salve as configurações no Dashboard para confirmar o pleno funcionamento das APIs!
+   - Os campos de e-mail e senha iniciam completamente vazios por segurança.
+   - **E-mail de Acesso**: `admin@coopesq.com.br`
+   - **Senha Padrão**: `password` (Recomenda-se alterar nas configurações do painel)
+   - Teste o login para confirmar o pleno funcionamento do token Sanctum e navegue pelo painel responsivo!
 
 ---
 
